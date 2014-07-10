@@ -1,0 +1,116 @@
+<html>
+<head>
+	<title>Collision test</title>
+	<style>
+		html, body{
+			margin:0px;
+			padding:0px;
+		}
+		#c{
+			border:1px solid #000;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="c" width="1000" height="400"></canvas>
+	<script>
+		var canvas = document.querySelector('#c');
+		var ctx = canvas.getContext('2d');
+
+		function lineIntersect(x1,y1,x2,y2, x3,y3,x4,y4) {
+		    this._x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+		    this._y=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+		    if (isNaN(this._x)||isNaN(this._y)) {
+		        return {'collision':false};
+		    } else {
+		        if (x1>=x2) {
+		            if (!(x2<=this._x&&this._x<=x1)) {return false;}
+		        } else {
+		            if (!(x1<=this._x&&this._x<=x2)) {return false;}
+		        }
+		        if (y1>=y2) {
+		            if (!(y2<=this._y&&this._y<=y1)) {return false;}
+		        } else {
+		            if (!(y1<=this._y&&this._y<=y2)) {return false;}
+		        }
+		        if (x3>=x4) {
+		            if (!(x4<=this._x&&this._x<=x3)) {return false;}
+		        } else {
+		            if (!(x3<=this._x&&this._x<=x4)) {return false;}
+		        }
+		        if (y3>=y4) {
+		            if (!(y4<=this._y&&this._y<=y3)) {return false;}
+		        } else {
+		            if (!(y3<=this._y&&this._y<=y4)) {return false;}
+		        }
+		    }
+		    return {'collision':true,'x':this._x,'y':this._y};
+		}
+		var py = 120;
+		var px = 500;
+		var ay = 0.1;
+
+		var key = {
+			left:false,
+			right:false,
+
+		}
+		var terrain = [200,300,400,200,600,300,800,100,700,80,200,80]
+
+		function update(){
+			window.requestAnimationFrame(update);
+			ctx.clearRect(0,0,canvas.width,canvas.height);
+
+			if(key.left){px-=3};
+			if(key.right){px+=3};
+
+			var collision = false;
+
+			for(i = 0; i < terrain.length/2-1; i++){
+				var c = lineIntersect(px+ay,py-20+ay,px,py,terrain[i*2],terrain[i*2+1],terrain[i*2+2],terrain[i*2+3]);
+				if(c.collision && ay > 0){
+					collision = c;
+				}
+			}
+			py += ay;
+			if(collision != false){
+				ctx.strokeStyle = "#f00";
+				py = collision.y+2;
+				ay = 0.1;
+			}else{
+				ctx.strokeStyle = "#000";
+				ay=Math.min(ay+0.2,7.5);
+			}
+			
+			ctx.fillRect(px-10,py-50,20,50);
+
+			ctx.beginPath();
+			ctx.moveTo(px,py-20);
+			ctx.lineTo(px,py);
+			ctx.stroke();
+
+			ctx.beginPath();
+			for(i = 0; i < terrain.length/2; i++){
+				if(i === 0){
+					ctx.moveTo(terrain[i*2],terrain[i*2+1])
+				}else{
+					ctx.lineTo(terrain[i*2],terrain[i*2+1])
+				}
+			}
+			ctx.stroke();
+
+		}
+		update();
+
+		window.onkeydown = function(e){
+			if(e.keyCode == 37){key.left = true}else
+			if(e.keyCode == 39){key.right = true}else
+			if(e.keyCode == 32){ay=-8; py-=8};
+		}
+		window.onkeyup = function(e){
+			if(e.keyCode == 37){key.left = false}else
+			if(e.keyCode == 39){key.right = false};
+		}
+	</script>
+</body>
+</html>
